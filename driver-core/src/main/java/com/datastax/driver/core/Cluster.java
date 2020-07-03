@@ -734,12 +734,13 @@ public class Cluster implements Closeable {
 
     @Override
     public List<InetSocketAddress> getContactPoints() {
-      if (rawAddresses.isEmpty()) return addresses;
+      if (rawAddresses.isEmpty()) return unresolve(addresses);
 
       List<InetSocketAddress> allAddresses = new ArrayList<InetSocketAddress>(addresses);
       for (InetAddress address : rawAddresses)
         allAddresses.add(new InetSocketAddress(address, port));
-      return allAddresses;
+
+      return unresolve(allAddresses);
     }
 
     /**
@@ -1369,6 +1370,13 @@ public class Cluster implements Closeable {
      */
     public Cluster build() {
       return Cluster.buildFrom(this);
+    }
+
+    private List<InetSocketAddress> unresolve(List<InetSocketAddress> addresses) {
+      List<InetSocketAddress> result = new ArrayList<InetSocketAddress>();
+      for (InetSocketAddress address : addresses)
+        result.add(InetSocketAddress.createUnresolved(address.getHostName(), address.getPort()));
+      return result;
     }
   }
 
